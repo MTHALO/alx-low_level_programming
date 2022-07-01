@@ -5,6 +5,7 @@
 /**
  * main - generates a random number to int n
  *it prints if it's negative or positive or zero
+ ** Return: 0
  */
 
 int main(void)
