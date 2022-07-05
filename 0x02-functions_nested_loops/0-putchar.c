@@ -1,12 +1,20 @@
-#include <stdio.h>
+#include <main.h>
 /**
  * main - prints _putchar, followed by a new line.
+ * Description:prints _putchar
  * Return: Always 0 (Success)
  */
 
-int main () {
+int main(void)
+{
+	char text[9] = "_putchar";
+	int i = 0;
+
+	for (i = 0; i < 8; i++)
 	{
-		printf("\n_putchar");
+		_putchar(text[i]);
 	}
-	return(0);
+	_putchar('\n');
+
+	return (0);
 }
