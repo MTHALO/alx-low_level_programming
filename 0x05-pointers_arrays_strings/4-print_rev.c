@@ -6,16 +6,24 @@
  * Return: void
  */
 
-void print_rev(char *s)
+void rev_string(char *s)
 {
-	int i = 0;
-	while (s[i])
-		i++;
+	int i, max, half;
+	char first, last;
 
-	while (i--)
+	i = 0;
+	while (s[i] != '\0')
 	{
-		_putchar(s[i]);
+		i++;
 	}
-	_putchar('\n');
-
+	max = i - 1;
+	half = max / 2;
+	while (half >= 0)
+	{
+		first = s[max - half];
+		last = s[half];
+		s[half] = first;
+		s[max - half] = last;
+		half--;
+	}
 }
