@@ -1,93 +1,92 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <elf.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <elf.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+void check_elf(unsigned char *e_ident);
+void print_magic(unsigned char *e_ident);
+void print_class(unsigned char *e_ident);
+void print_data(unsigned char *e_ident);
+void print_version(unsigned char *e_ident);
+void print_abi(unsigned char *e_ident);
+void print_osabi(unsigned char *e_ident);
+void print_type(unsigned int e_type, unsigned char *e_ident);
+void print_entry(unsigned long int e_entry, unsigned char *e_ident);
+void close_elf(int elf);
 
 /**
- * print_address - prints address
- * @ptr: pointer to magic data
- * Return: nothing
+ * check_elf - Checks if a file is an ELF file.
+ * @e_ident: A pointer to an array containing the ELF magic numbers.
+ *
+ * Description: If the file is not an ELF file - exit code 98.
  */
-void print_address(char *ptr)
+void check_elf(unsigned char *e_ident)
 {
-	int i, start;
-	char sys;
+	int index;
 
-	printf(" Entry point address:		0x");
-
-	sys = ptr[4] + '0';
-	if (sys == '1')
+		for (index = 0; index < 4; index++)
 	{
-		begin = 26;
-		printf("80");
-		for (i = begin; i>= 22; i--)
+		if (e_ident[index] != 127 &&
+		    e_ident[index] != 'E' &&
+		    e_ident[index] != 'L' &&
+		    e_ident[index] != 'F')
 		{
-			if (ptr[i] > 0)
-				printf("%x", ptr[i]);
-			else if (ptr[i] < 0)
-				printf("%x", 256 + ptr[i]);
-		}
-			if (ptr[7] == 6)
-				printf("00");
-	}
-
-	if (sys =='2')
-	{
-		begin = 26;
-		for (i = begin; i > 23; i--)
-		{
-			if (ptr[i] >= 0)
-				printf("%02x", ptr[i]);
+			dprintf(STDERR_FILENO, "Error: Not an ELF file\n");
+			exit(98);
 		}
 	}
-	printf("\n");
 }
 
 /**
- * print_type - prints file type
- * @ptr: pointer to magic data
- * Return: nothing
+ * print_magic - Prints the magic numbers of an ELF header.
+ * @e_ident: A pointer to an array containing the ELF magic numbers.
+ *
+ * Description: Magic numbers are separated by spaces.
  */
-void print_type(char *ptr)
+void print_magic(unsigned char *e_ident)
 {
-	char type = ptr[16];
+	int index;
 
-	if (ptr[5] == 1)
-		type = ptr[16];
-	else
-		type = ptr[17];
+	printf("  Magic:   ");
 
-	printf("  Type:					");
-	if (type == 0)
-		printf("NONE (No file type)\n");
-	else if (type == 1)
-		printf("REL (Relocatable file)\n");
-	else if (type == 2)
-		printf("EXEC (Executable file)\n");
-	else if (type == 3)
-		printf("DYN (Shared object file)\n");
-	else if (type == 4)
-		printf("CORE (Core file)\n");
-	else
-		printf("<unknown: %x>\n", type);
+	for (index = 0; index < EI_NIDENT; index++)
+	{
+		printf("%02x", e_ident[index]);
+
+		if (index == EI_NIDENT - 1)
+			printf("\n");
+		else
+			printf(" ");
+	}
 }
 
 /**
- * print_osabi - prints OS/ABI
- * @ptr: pointer to magic data
- * Return: nothing
+ * print_class - Prints the class of an ELF header.
+ * @e_ident: A pointer to an array containing the ELF class.
  */
-void print_osabi(char *ptr)
+void print_class(unsigned char *e_ident)
 {
-	char osabi - ptr[7];
+	printf("  Class:                             ");
 
-	printf(" OS/ABI:			");
-	if (osabi == 0)
-		printf("UNIX - System V\n");
-	else if (osabi == 2)
-		printf("UNIX - NetBSD\n");
-	else if (osabi == 6)
-		printf("UNIX - Solaris\n");
+	switch (e_ident[EI_CLASS])
+	{
+	case ELFCLASSNONE:
+		printf("none\n");
+		break;
+	case ELFCLASS32:
+		printf("ELF32\n");
+		break;
+	case ELFCLASS64:
+		printf("ELF64\n");
+		break;
+	default:
+		printf("<unknown: %x>\n", e_ident[EI_CLASS]);
+	}
+}
+
+/**
+ * print_data - Prints the data of an ELF header.
+ * @e_ident: A pointer to an array containing the ELF class.
