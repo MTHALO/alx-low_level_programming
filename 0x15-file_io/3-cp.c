@@ -1,72 +1,50 @@
-#include "main.h"
-#include <stdio.h>
+#include "holberton.h"
 
 /**
- * error_file - checks if files can be opened
- * @file_from: source file
- * @file_to: destination file
- * @argv: argument vector - arguments in this program
- * Return: nothing
+ * main - function that call another function to copy a file
+ * @argc: int count of arguments
+ * @argv: char double pointer
+ *
+ * Return: int
  */
-void error_file(int file_from, int file_to, char *argv[])
+int main(int argc, char **argv)
 {
-	if (file_from == -1)
+	int fd, fw;
+	char buf[1024];
+	ssize_t read_num, write_num, close_num, close_new;
+
+	if (argc != 3)
+	{
+		dprintf(STDERR_FILENO, "Usage: cp file_from file_to\n"), exit(97);
+	}
+	fd = open(argv[1], O_RDONLY);
+	if (fd == -1)
 	{
 		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", argv[1]);
 		exit(98);
 	}
-	if (file_to == -1)
+	fw = open(argv[2], O_CREAT | O_WRONLY | O_TRUNC, 0664);
+	if (fw == -1)
+		dprintf(STDERR_FILENO, "Error: Can't write to %s\n", argv[2]), exit(99);
+	while ((read_num = read(fd, buf, 1024)) > 0)
 	{
-		dprintf(STDERR_FILENO, "Error: Can't write to %s\n", argv[2]);
-		exit(99);
+		write_num = write(fw, buf, read_num);
+		if (write_num != read_num)
+		{
+			dprintf(STDERR_FILENO, "Error: Can't write to %s\n", argv[2]);
+			exit(99);
+		}
 	}
-}
-
-/**
- * main - check code
- * @argc: argument count - number of arguments
- * @argv: argument vector - arguments in the program
- * Return: always 0
- */
-int main(int argc, char *argv[])
-{
-	int file_from, file_to, err_close;
-	ssize_t chars, writes;
-	char buffer[1024];
-
-	if (argc != 3)
+	if (read_num == -1)
 	{
-		dprintf(STDERR_FILENO, "%s\n", "Usage: cp file_from file_to");
-		exit(97);
+		dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", argv[1]);
+		exit(98);
 	}
-
-	file_from = open(argv[1], O_RDONLY);
-	file_to = open(argv[2], O_CREAT | O_WRONLY | O_TRUNC | O_APPEND, 0664);
-	error_file(file_from, file_to, argv);
-
-	chars = 1024;
-	while (chars == 1024)
-	{
-		chars = read(file_from, buffer, 1024);
-		if (chars == -1)
-			error_file(-1, 0, argv);
-		writes = write(file_to, buffer, chars);
-		if (writes == -1)
-			error_file(0, -1, argv);
-	}
-
-	err_close = close(file_from);
-	if (err_close == -1)
-	{
-		dprintf(STDERR_FILENO, "Error: Can't close file %d\n", file_from);
-		exit(100);
-	}
-
-	err_close = close(file_to);
-	if (err_close == -1)
-	{
-		dprintf(STDERR_FILENO, "Error: Can't close file %d\n", file_from);
-		exit(100);
-	}
+	close_new = close(fw);
+	close_num = close(fd);
+	if (close_num == -1)
+		dprintf(STDERR_FILENO, "Error: Can't close fd %d\n", fd), exit(100);
+	if (close_new == -1)
+		dprintf(STDERR_FILENO, "Error: Can't close fd %d\n", fw), exit(100);
 	return (0);
 }
